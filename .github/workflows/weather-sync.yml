@@ -1,0 +1,40 @@
+name: Weather Sync to Tuya
+
+on:
+  schedule:
+    # Run every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  sync-weather:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Run weather sync
+      env:
+        IQAIR_API_KEY: ${{ secrets.IQAIR_API_KEY }}
+        TUYA_CLIENT_ID: ${{ secrets.TUYA_CLIENT_ID }}
+        TUYA_CLIENT_SECRET: ${{ secrets.TUYA_CLIENT_SECRET }}
+        TUYA_DEVICE_ID: ${{ secrets.TUYA_DEVICE_ID }}
+        TUYA_API_ENDPOINT: ${{ secrets.TUYA_API_ENDPOINT }}
+      run: |
+        python push_weather_to_tuya.py
+        
+    - name: Log completion
+      run: |
+        echo "Weather sync completed at $(date)"
+        echo "Next run will be in 10 minutes" 
